@@ -73,7 +73,7 @@
                 <ul class="space-y-2 text-xs md:text-sm">
                     <li class="flex items-start gap-2">
                         <span class="bg-indigo-100 text-indigo-700 w-5 h-5 rounded-full flex items-center justify-center shrink-0 font-bold text-xs">1</span>
-                        <span><strong>親（お題出し）の役割：</strong> 6枚の緻密な絵（事前作成された60種類のオリジナル画から選ばれます）から1枚選び、他のみんなにバレないような「タイトル（コトバ）」をつけます。</span>
+                        <span><strong>親（お題出し）の役割：</strong> 6枚の絵（Google Driveの専用フォルダからランダムに選ばれます）から1枚選び、他のみんなにバレないような「タイトル（コトバ）」をつけます。</span>
                     </li>
                     <li class="flex items-start gap-2">
                         <span class="bg-indigo-100 text-indigo-700 w-5 h-5 rounded-full flex items-center justify-center shrink-0 font-bold text-xs">2</span>
@@ -108,7 +108,6 @@
             <p class="text-xs text-slate-500 mb-6">参加する人の名前を入力してください。（3〜6名まで推奨）</p>
 
             <div class="space-y-3 mb-6" id="member-inputs-container">
-                <!-- JavaScriptで動的に追加・削除されます -->
             </div>
 
             <button onclick="addMemberInput()" class="w-full border-2 border-dashed border-slate-200 text-slate-500 hover:border-indigo-500 hover:text-indigo-600 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1 mb-6">
@@ -141,13 +140,11 @@
                 </div>
                 <!-- 各自の現在のスコア表示 -->
                 <div class="flex flex-wrap justify-center gap-2" id="scores-mini-display">
-                    <!-- JSでリアルタイムにスコアをバッジ表示 -->
                 </div>
             </div>
 
             <!-- 動的に差し替えられる、お題決め / 推理バトンリレーのコンテナ -->
             <div id="game-active-panel" class="bg-white border border-slate-100 shadow-xl rounded-3xl p-6 md:p-8 min-h-[450px] flex flex-col justify-between">
-                <!-- ここに親のお題入力フォーム、または子の投票画面、交代カバー画面が動的に描画されます -->
             </div>
         </section>
 
@@ -172,7 +169,6 @@
                         <span>最終ランキング</span>
                     </h3>
                     <div id="ranking-container" class="space-y-3">
-                        <!-- JSでランキング順にカードを配置 -->
                     </div>
                 </div>
 
@@ -230,41 +226,57 @@
     <!-- JavaScript ロジック -->
     <script>
         // ==========================================
-        // 60通りの事前作成された幻想的な絵（プリセット）の定義データ
-        // 各自固有のIDに、対応するストーリーモチーフを完全に分離
-        // sceneType:
-        //   1: 浮遊する天空の扉と階段
-        //   2: 時を刻む時計と深海
-        //   3: 本から飛び出す物語の世界
-        //   4: 檻から飛び立つ美しい鳥
-        //   5: 砂漠のピラミッドと神の目
-        //   6: 深海のクラゲと沈んだ黄金の鍵
-        //   7: 機械仕掛けの心臓と咲き誇る薔薇
-        //   8: チェス盤の歪んだ迷宮空間
-        //   9: 星屑を掬い取る黄金の手
-        //   10: 逆さまの都市と水面の小舟
+        // 【抽出済み】Google Drive画像ファイルIDリスト (全46枚分)
+        // 先生から送っていただいたURLから自動抽出したIDを配列に格納しています。
         // ==========================================
-        const PRESET_ARTWORKS = [];
-        for (let i = 1; i <= 60; i++) {
-            const sceneType = ((i - 1) % 10) + 1; // 1〜10をループ
-            const palettes = [
-                ['#0f172a', '#1e1b4b', '#581c87', '#f43f5e', '#fef08a'], // 闇とピンク
-                ['#022c22', '#064e3b', '#115e59', '#10b981', '#fbbf24'], // 幻想的な緑と金
-                ['#4c0519', '#881337', '#9d174d', '#a855f7', '#38bdf8'], // 深い紅と紫
-                ['#0c4a6e', '#0369a1', '#075985', '#38bdf8', '#fbbf24'], // 深海青と黄金
-                ['#2e1065', '#3b0764', '#581c87', '#ec4899', '#fef08a'], // 妖しい紫とピンク
-                ['#172554', '#1e3a8a', '#1d4ed8', '#06b6d4', '#ffd700']  // ロイヤルブルーとゴールド
-            ];
-            const p = palettes[i % palettes.length];
-            PRESET_ARTWORKS.push({
-                id: i,
-                name: `幻想カード No.${i}`,
-                sky: [p[0], p[1], p[2]],
-                bodyColor: p[3],
-                accentColor: p[4],
-                sceneType: sceneType
-            });
-        }
+        const DRIVE_IMAGE_IDS = [
+            "1jpE5kN02ernJM-cU3lwJxtB7SN3eHjAx",
+            "1aNeO3DFn3L5WHGDmIzIfu-DGN-fJLWft",
+            "19J5Pk0fJtcoxgLXO_Uc2mAHzqT7wPFvV",
+            "1XpZ5QqQFjIL-Axzxuvb4l3cv7Gqq-E-G",
+            "1X8ymwf26rEA7W8NkVGzyk4xsfbq5fJsQ",
+            "1sIA3c3RqPZHoiKgGWbajeY_sOtgspZhf",
+            "1W073SUVAt9nneReKuQfEOStxp2FMzX33",
+            "1qeK6RNgmmZph16xZJ_rQyEDJ4iRTO-jQ",
+            "1xdYFqCyJOF_FvA7dfGLy1GYq6qUzRrlE",
+            "1vVIa_-qdyEd6__cp8pZXnHeL1eG8_Bue",
+            "1o_lkU6Qd9oyxF5oyGMrbrprVqhqINroa",
+            "1oPwy2zvMaCePvOzv9Cf5l_KW9F_knttO",
+            "1kuQu15LzYBzcViDCBCbpF-9dLAE4kMo7",
+            "1cDpf8OGfRdI6w9y2mfQi-E0vO8DHHz39",
+            "1ApaYSFgfZnoJSE7Z1UMYLflN4mokY3L8",
+            "16mTKnoaxkZz3ITP72kYmREDOWZKVtv55",
+            "1647ozuZ1Du5uj9tisjfhBjTBZFwzOq-_",
+            "1mJJTHRPJsv3yAs6dPKQLntt46wl5g4G5",
+            "1oChrwMEVl-f0LeuW3SZAcXizq34tGAlX",
+            "1WFn1-wyY18Ojp-TVEI4jZV1se9kzsL4O",
+            "1XWYVBLuBijb0qIfWx0CK-9Ic-WrNAD4v",
+            "1lks3_WHF8EdfkWL-iSudsojdahxv7JFj",
+            "1niDpJ5KAEwq6GUvuRawzPeSm8ebjlPJh",
+            "1O92FA3kRkn4oD_WarDZME9EhRiNLg65G",
+            "1kUqwNOLUL58Anf7PENObz3AzUUJCjbtF",
+            "1aQbK_i-jtf5gIXaAgRpASv43DWJwymr7",
+            "17XztqSvNTCWdA8Gby2qinz8n-FODF-cf",
+            "1vBj5BefeCdOe2BR2YaDL3RYb15JqZxaX",
+            "136y5xgrnBvAqPBpd7bU5x5y00OB_FKGv",
+            "1JEaz8CJ9FpyKcTia5A8pXQNShwEdDZFW",
+            "1_OBcDjo6_mS5PPcNYeJvGLGzQQfApuIv",
+            "1Kq_fs3yaPkljgo81VKdkraDkpqi3Av1I",
+            "1pJOwb332zybDAkNIqv0keW3KZc47C6b2",
+            "1PzB63F-UbmTOhaslw5Tz3kPXwZy0vCgz",
+            "1ndvOqlEpaUsqfur1_EnD-XyCLqt_hAaf",
+            "1Tu_oSKxAqyfQOeYxeAL3YTaWL76u8W8r",
+            "1Bri4ABxDPiCKYC0khbi7OKvwPWC21XJN",
+            "1qEgPkd0eWivqE3wgVCElRwEE_ZTfHiOH",
+            "1YzHqPKWfPXDzOxxX2R_Eyoc2BhPIMEXZ",
+            "1LlQX-GrI5lkoMJx9ikMq6_x6pHpaPjEj",
+            "1ys5FWwzG2xwXpLq1ejmSj823VkC71k48",
+            "1pQ87oVttLwxgAGE7Ce3xJYD5sHgT2i8Q",
+            "14cgAgXorKDieAlJBLRuKs2iC-UYbDOyu",
+            "1skKImexnIMYyW945-01BUMxm-AgEVEeo",
+            "1-zL6MIiI5zCYN51oOy3jpVCrV50j6rn7",
+            "1odY8Sd93fCDytfLpawzti8FqyOccXW5c"
+        ];
 
         // --- ゲーム状態管理 ---
         let members = ['プレイヤー1', 'プレイヤー2', 'プレイヤー3'];
@@ -275,7 +287,7 @@
         let storytellerIndex = 0; // 現在の親のメンバーインデックス
         
         // 各ラウンド内の一時ステート
-        let generatedCards = []; // そのラウンド用に選ばれた6枚のプリセットカードオブジェクト
+        let generatedCards = []; // そのラウンド用に選ばれた6枚の画像ID
         let parentSelectedIndex = -1; // 親が選んだ絵のインデックス(0~5)
         let parentTitle = ""; // 親が決めたタイトルお題
         let childVotes = {}; // 子の投票状況 {playerName: cardIndex}
@@ -378,6 +390,11 @@
                 return;
             }
 
+            if (DRIVE_IMAGE_IDS.length < 6) {
+                alert("エラー: 画像が6枚以上登録されていません。");
+                return;
+            }
+
             // 得点表初期化
             scores = {};
             members.forEach(m => {
@@ -412,8 +429,8 @@
             
             updateScoresDisplay();
 
-            // 60枚の事前作成されたプリセット絵データから重複なしで6枚ランダムに選出
-            const shuffledPresets = [...PRESET_ARTWORKS].sort(() => 0.5 - Math.random());
+            // ドライブの画像IDリストから重複なしで6枚ランダムに選出
+            const shuffledPresets = [...DRIVE_IMAGE_IDS].sort(() => 0.5 - Math.random());
             generatedCards = shuffledPresets.slice(0, 6);
 
             parentSelectedIndex = -1;
@@ -472,19 +489,17 @@
                     <div>
                         <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100">親のフェーズ</span>
                         <h3 class="text-xl font-black text-slate-900 mt-2 mb-1">どの絵にタイトルをつけますか？</h3>
-                        <p class="text-xs text-slate-400">6枚（事前デザインされた60種類から選出）から「自分の選ぶ1枚」を決め、その絵を表すタイトル（お題コトバ）を入力してください。</p>
+                        <p class="text-xs text-slate-400">6枚（Google Driveからランダム選出）から「自分の選ぶ1枚」を決め、その絵を表すタイトル（お題コトバ）を入力してください。</p>
                     </div>
 
-                    <!-- 6枚の事前定義アートのリスト -->
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        ${generatedCards.map((preset, idx) => `
-                            <div onclick="selectParentCard(${idx})" id="card-option-${idx}" class="aspect-square bg-slate-50 border-2 border-slate-100 rounded-xl overflow-hidden cursor-pointer hover:border-slate-300 transition-all shadow-sm">
-                                ${renderPresetSVG(preset)}
+                        ${generatedCards.map((id, idx) => `
+                            <div onclick="selectParentCard(${idx})" id="card-option-${idx}" class="aspect-square bg-slate-50 border-2 border-slate-100 rounded-xl overflow-hidden cursor-pointer hover:border-slate-300 transition-all shadow-sm flex items-center justify-center">
+                                ${renderPresetSVG(id)}
                             </div>
                         `).join('')}
                     </div>
 
-                    <!-- タイトル入力部分 -->
                     <div class="pt-4 border-t border-slate-100 space-y-4">
                         <div>
                             <label class="block text-sm font-bold text-slate-800 mb-1.5 flex items-center space-x-1">
@@ -512,7 +527,6 @@
 
         function selectParentCard(index) {
             parentSelectedIndex = index;
-            // 選択デザイン適用
             for (let i = 0; i < 6; i++) {
                 const el = document.getElementById(`card-option-${i}`);
                 if (el) {
@@ -535,14 +549,12 @@
 
             parentTitle = titleInput;
 
-            // 子プレイヤー（親以外）をリストアップし、投票フェーズへ移行
             const childrenIndices = [];
             members.forEach((m, idx) => {
                 if (idx !== storytellerIndex) childrenIndices.push(idx);
             });
 
             activeVoterIndex = 0;
-            // 最初の子の「カバー画面」を表示してバトンタッチ
             const firstVoterName = members[childrenIndices[activeVoterIndex]];
             showTransitionCover("child-vote", firstVoterName, `親のつけたお題コトバは「${parentTitle}」です！この言葉に合う絵を、6枚の中から推理してください。`);
         }
@@ -574,9 +586,9 @@
 
                     <!-- 6枚のカードリスト -->
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        ${generatedCards.map((preset, idx) => `
-                            <div onclick="selectChildVote(${idx})" id="vote-card-option-${idx}" class="aspect-square bg-slate-50 border-2 border-slate-100 rounded-xl overflow-hidden cursor-pointer hover:border-slate-300 transition-all shadow-sm">
-                                ${renderPresetSVG(preset)}
+                        ${generatedCards.map((id, idx) => `
+                            <div onclick="selectChildVote(${idx})" id="vote-card-option-${idx}" class="aspect-square bg-slate-50 border-2 border-slate-100 rounded-xl overflow-hidden cursor-pointer hover:border-slate-300 transition-all shadow-sm flex items-center justify-center">
+                                ${renderPresetSVG(id)}
                             </div>
                         `).join('')}
                     </div>
@@ -590,11 +602,10 @@
                 </div>
             `;
 
-            // ローカルスコープで仮の選択肢を保持
             window.selectChildVote = function(idx) {
                 tempSelectedIndex = idx;
                 for (let i = 0; i < 6; i++) {
-                    const el = document.getElementById(`vote-card-option-${i}`);
+                    const el = document.getElementById('vote-card-option-' + i);
                     if (el) {
                         if (i === idx) el.classList.add('card-selected');
                         else el.classList.remove('card-selected');
@@ -608,16 +619,13 @@
                     return;
                 }
 
-                // 投票登録
                 childVotes[currentVoterName] = tempSelectedIndex;
 
                 if (activeVoterIndex < childrenIndices.length - 1) {
-                    // 次の子へバトンタッチ
                     activeVoterIndex++;
                     const nextVoterName = members[childrenIndices[activeVoterIndex]];
                     showTransitionCover("child-vote", nextVoterName, `親のつけたお題コトバは「${parentTitle}」です！この言葉に合う絵を、6枚の中から推理してください。`);
                 } else {
-                    // 全員投票完了！結果発表画面を構築（カバーなし、全員で見るためダイレクト）
                     renderRoundResultScreen();
                 }
             };
@@ -629,13 +637,11 @@
         // 【フェーズC】ラウンド得点集計と結果発表
         // ==========================================
         function renderRoundResultScreen() {
-            // 得点の計算
             const roundScoresGained = {};
             members.forEach(m => {
                 roundScoresGained[m] = 0;
             });
 
-            // 正解した子のリスト
             const correctChildren = [];
             const incorrectChildren = [];
             
@@ -656,36 +662,29 @@
 
             let resultSummaryText = "";
 
-            // ディクシット得点計算ルール
             if (correctCount === 0) {
-                // 誰も当てられなかった
                 resultSummaryText = "誰も正解できませんでした！親は難しすぎるお題を出したため、得点はもらえません。";
                 roundScoresGained[storytellerName] = 0;
-                // 子全員（当てていないが）に2点
                 members.forEach((m, idx) => {
                     if (idx !== storytellerIndex) roundScoresGained[m] = 2;
                 });
             } else if (correctCount === totalVoters) {
-                // 全員正解してしまった
                 resultSummaryText = "全員正解しました！親は簡単すぎるお題を出したため、得点はもらえません。";
                 roundScoresGained[storytellerName] = 0;
-                // 子全員に2点
                 members.forEach((m, idx) => {
                     if (idx !== storytellerIndex) roundScoresGained[m] = 2;
                 });
             } else {
-                // 一部が正解（これがベスト！）
                 resultSummaryText = "一部のメンバーが正解しました！絶妙なお題を出した親に得点が入ります。";
                 roundScoresGained[storytellerName] = 3;
 
-                // 当てた子の人数が少ないほど当てた子の得点が高くなる傾斜配点ルール
                 let correctScoreGained = 2;
                 if (correctCount === 1) {
-                    correctScoreGained = 4; // 1人だけなら大金星！4点
+                    correctScoreGained = 4;
                 } else if (correctCount === 2) {
-                    correctScoreGained = 3; // 2人なら3点
+                    correctScoreGained = 3;
                 } else {
-                    correctScoreGained = 2; // 3人以上なら2点
+                    correctScoreGained = 2;
                 }
 
                 correctChildren.forEach(m => {
@@ -696,12 +695,10 @@
                 });
             }
 
-            // スコアを累積
             members.forEach(m => {
                 scores[m] += roundScoresGained[m];
             });
 
-            // 画面の構築
             const panel = document.getElementById('game-active-panel');
             panel.innerHTML = `
                 <div class="space-y-6">
@@ -711,28 +708,24 @@
                         <p class="text-xs text-slate-500">親のタイトル: <span class="font-bold text-indigo-600 text-sm">「${parentTitle}」</span></p>
                     </div>
 
-                    <!-- 正解の絵の提示 -->
                     <div class="flex flex-col items-center justify-center bg-slate-50 border border-slate-200/60 rounded-2xl p-4 max-w-sm mx-auto">
                         <p class="text-xs font-bold text-emerald-700 mb-2 flex items-center gap-1">
                             <i data-lucide="check-circle" class="w-4 h-4"></i>
                             <span>親（${storytellerName}）が選んだ正解の絵</span>
                         </p>
-                        <div class="w-44 h-44 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-inner">
+                        <div class="w-44 h-44 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-inner flex items-center justify-center">
                             ${renderPresetSVG(generatedCards[parentSelectedIndex])}
                         </div>
                     </div>
 
-                    <!-- 得点獲得サマリー -->
                     <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-center">
                         <p class="text-xs text-indigo-500 font-bold">解説</p>
                         <p class="text-sm font-bold text-indigo-950 mt-1">${resultSummaryText}</p>
                     </div>
 
-                    <!-- 各プレイヤーの投票結果と獲得得点一覧 -->
                     <div class="space-y-3">
                         <h4 class="font-bold text-slate-700 text-xs uppercase tracking-wider px-1">各自の結果詳細</h4>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <!-- 親 -->
                             <div class="border border-slate-200/80 rounded-xl p-3 bg-white flex justify-between items-center border-l-4 border-l-indigo-600">
                                 <div>
                                     <span class="text-[10px] font-bold text-indigo-600 block">親</span>
@@ -744,7 +737,6 @@
                                 </div>
                             </div>
 
-                            <!-- 子メンバー -->
                             ${members.map((m, idx) => {
                                 if (idx === storytellerIndex) return '';
                                 const isCorrect = correctChildren.includes(m);
@@ -768,7 +760,6 @@
                         </div>
                     </div>
 
-                    <!-- 進行ボタン -->
                     <div class="pt-4 border-t border-slate-100 flex justify-end">
                         <button onclick="progressToNextRound()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3.5 rounded-xl text-sm shadow-md transition-all flex items-center space-x-1.5">
                             <span id="progress-btn-text">次のラウンドへ</span>
@@ -781,16 +772,13 @@
         }
 
         function progressToNextRound() {
-            // 次のラウンドに進めるかの判断
             storytellerIndex++;
             if (storytellerIndex >= members.length) {
-                // 親が全員一回りした
                 storytellerIndex = 0;
                 currentLap++;
             }
 
             if (currentLap > totalLaps) {
-                // 2ターン全員が親を終えたらゲーム終了
                 renderFinalResults();
             } else {
                 startRound();
@@ -798,12 +786,10 @@
         }
 
         // ==========================================
-        // 【最終画面】得点ランキングとダイアローグ
+        // 【最終画面】得点ランキング
         // ==========================================
         function renderFinalResults() {
             const rankingContainer = document.getElementById('ranking-container');
-            
-            // スコアの高い順に並び替え
             const sortedPlayers = [...members].sort((a, b) => scores[b] - scores[a]);
 
             rankingContainer.innerHTML = sortedPlayers.map((player, idx) => {
@@ -843,438 +829,12 @@
         }
 
         // ==========================================
-        // 【完全リニューアル】シーン別に全く異なる、
-        // Dixit風の極めて緻密で美しいSVGイラストを描画する関数
+        // Google Driveの画像ファイルを表示する関数
         // ==========================================
-        function renderPresetSVG(preset) {
-            const gradId = `cardGrad-${preset.id}-${Math.floor(Math.random()*1000)}`;
-            const lightId = `lightGrad-${preset.id}`;
-            const goldId = `goldGrad-${preset.id}`;
-
-            let svg = `<svg viewBox="0 0 320 320" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" class="rounded-xl">`;
-            
-            // 共通グラデーション・定義体の追加
-            svg += `
-                <defs>
-                    <!-- 空や空間のグラデーション -->
-                    <linearGradient id="${gradId}" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="${preset.sky[0]}" />
-                        <stop offset="60%" stop-color="${preset.sky[1]}" />
-                        <stop offset="100%" stop-color="${preset.sky[2]}" />
-                    </linearGradient>
-                    <!-- 発光グラデーション -->
-                    <radialGradient id="${lightId}" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
-                        <stop offset="30%" stop-color="${preset.accentColor}" stop-opacity="0.8" />
-                        <stop offset="70%" stop-color="${preset.bodyColor}" stop-opacity="0.3" />
-                        <stop offset="100%" stop-color="${preset.sky[1]}" stop-opacity="0" />
-                    </radialGradient>
-                    <!-- 黄金グラデーション -->
-                    <linearGradient id="${goldId}" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#ffe066" />
-                        <stop offset="50%" stop-color="#f59e0b" />
-                        <stop offset="100%" stop-color="#b45309" />
-                    </linearGradient>
-                </defs>
-            `;
-
-            // 背景空間を描画
-            svg += `<rect width="320" height="320" fill="url(#${gradId})" />`;
-
-            // シーン別に完全に独立した緻密なビジュアルを描画する
-            switch (preset.sceneType) {
-                case 1:
-                    // --------------------------------------------------
-                    // シーン 1: 「天空の浮かぶ扉と星空の階段」
-                    // --------------------------------------------------
-                    // 背景の満月
-                    svg += `<circle cx="240" cy="80" r="45" fill="url(#${lightId})" opacity="0.6" />`;
-                    svg += `<circle cx="240" cy="80" r="25" fill="#ffffff" opacity="0.9" />`;
-                    // ふわふわした雲（最背面・中景）
-                    svg += `<path d="M-20,220 Q40,180 120,210 Q180,170 240,200 Q280,180 340,210 L340,340 L-20,340 Z" fill="${preset.sky[2]}" opacity="0.8" />`;
-                    // 浮かぶドアの額縁とドア
-                    svg += `
-                        <g transform="translate(130, 80)">
-                            <!-- ドアフレーム -->
-                            <rect x="0" y="0" width="60" height="110" fill="url(#${goldId})" rx="4" />
-                            <!-- ドアの向こう（超光） -->
-                            <rect x="5" y="5" width="50" height="100" fill="#ffffff" rx="2" />
-                            <rect x="5" y="5" width="50" height="100" fill="url(#${lightId})" opacity="0.8" rx="2" />
-                            <!-- 半開きのドアの板 -->
-                            <rect x="-15" y="3" width="50" height="104" fill="${preset.bodyColor}" rx="2" opacity="0.95" transform="skewY(-10)" />
-                            <!-- 黄金のドアノブ -->
-                            <circle cx="25" cy="55" r="3" fill="url(#${goldId})" />
-                        </g>
-                    `;
-                    // 宙に浮かぶ3D階段
-                    svg += `
-                        <g stroke="#ffffff" stroke-width="1.5" fill="${preset.sky[0]}" opacity="0.9">
-                            <!-- 階段 1 -->
-                            <polygon points="100,280 220,280 200,300 80,300" fill="url(#${goldId})" />
-                            <polygon points="80,300 200,300 200,310 80,310" fill="#78350f" />
-                            <!-- 階段 2 -->
-                            <polygon points="115,245 205,245 190,265 100,265" fill="url(#${goldId})" />
-                            <polygon points="100,265 190,265 190,272 100,272" fill="#78350f" />
-                            <!-- 階段 3 -->
-                            <polygon points="130,210 190,210 180,225 120,225" fill="url(#${goldId})" />
-                            <polygon points="120,225 180,225 180,230 120,230" fill="#78350f" />
-                        </g>
-                    `;
-                    break;
-
-                case 2:
-                    // --------------------------------------------------
-                    // シーン 2: 「崩れゆく時の砂時計と深海」
-                    // --------------------------------------------------
-                    // 光源（海底から湧き上がるような光）
-                    svg += `<circle cx="160" cy="160" r="100" fill="url(#${lightId})" opacity="0.4" />`;
-                    // 浮かぶ泡
-                    for(let k=0; k<12; k++) {
-                        const cx = (preset.id * 17 + k * 41) % 280 + 20;
-                        const cy = (preset.id * 13 + k * 23) % 260 + 30;
-                        svg += `<circle cx="${cx}" cy="${cy}" r="${2 + (k % 5)}" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5" />`;
-                    }
-                    // 深海の歪む巨大な時計
-                    svg += `
-                        <g transform="translate(160, 160) rotate(-20)">
-                            <!-- 時計の円盤フレーム -->
-                            <circle cx="0" cy="0" r="70" fill="none" stroke="url(#${goldId})" stroke-width="6" opacity="0.9" />
-                            <circle cx="0" cy="0" r="64" fill="${preset.sky[0]}" opacity="0.8" />
-                            <!-- 崩れて水のように流れる数字の文字盤 -->
-                            <path d="M-50,-20 C-80,40 -20,120 -50,150" fill="none" stroke="${preset.bodyColor}" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 6" />
-                            <!-- 黄金の針（不規則な長さ、複数） -->
-                            <line x1="0" y1="0" x2="10" y2="-45" stroke="url(#${goldId})" stroke-width="4" stroke-linecap="round" />
-                            <line x1="0" y1="0" x2="35" y2="20" stroke="url(#${goldId})" stroke-width="2" stroke-linecap="round" />
-                            <line x1="0" y1="0" x2="-25" y2="-15" stroke="${preset.accentColor}" stroke-width="1.5" stroke-linecap="round" />
-                            <circle cx="0" cy="0" r="7" fill="url(#${goldId})" />
-                        </g>
-                    `;
-                    // 砂時計のフレーム
-                    svg += `
-                        <g transform="translate(60, 100) rotate(15)" opacity="0.85">
-                            <path d="M10,10 L40,10 L30,40 L40,70 L10,70 L20,40 Z" fill="none" stroke="#ffffff" stroke-width="2.5" />
-                            <polygon points="12,14 38,14 25,40" fill="${preset.bodyColor}" opacity="0.6" />
-                            <!-- 落ちる砂のきらめき -->
-                            <circle cx="25" cy="45" r="2" fill="#ffffff" />
-                            <circle cx="25" cy="52" r="1" fill="#ffffff" />
-                            <polygon points="15,66 35,66 25,50" fill="${preset.bodyColor}" opacity="0.8" />
-                        </g>
-                    `;
-                    break;
-
-                case 3:
-                    // --------------------------------------------------
-                    // シーン 3: 「開かれた本から飛び出すおとぎ話の城」
-                    // --------------------------------------------------
-                    // 本の後ろから広がる魔法のオーラ
-                    svg += `<circle cx="160" cy="240" r="130" fill="url(#${lightId})" opacity="0.4" />`;
-                    // 本から空へ立ち上る魔法の光の帯
-                    svg += `<path d="M100,210 C70,120 220,80 180,20 C140,80 230,120 220,210 Z" fill="${preset.bodyColor}" opacity="0.3" />`;
-                    // 飛び出す「ちいさな城のシルエット」
-                    svg += `
-                        <g transform="translate(110, 60)" fill="${preset.sky[0]}" opacity="0.95">
-                            <rect x="30" y="40" width="40" height="50" rx="2" />
-                            <!-- 尖ったメイン塔 -->
-                            <polygon points="50,0 35,40 65,40" fill="${preset.bodyColor}" />
-                            <rect x="44" y="30" width="12" height="25" />
-                            <!-- サイドの塔 -->
-                            <polygon points="25,30 15,60 35,60" fill="${preset.bodyColor}" />
-                            <rect x="20" y="55" width="10" height="35" />
-                            <polygon points="75,30 65,60 85,60" fill="${preset.bodyColor}" />
-                            <rect x="70" y="55" width="10" height="35" />
-                        </g>
-                    `;
-                    // 開かれた大きな本（遠近感のある3D表示）
-                    svg += `
-                        <g transform="translate(160, 230)">
-                            <!-- 本の背表紙・カバー -->
-                            <path d="M-105,15 L0,0 L105,15 L100,25 L0,8 L-100,25 Z" fill="#78350f" stroke="#000000" stroke-width="1.5" />
-                            <!-- 左のページ -->
-                            <path d="M-100,10 C-50,0 -20,0 0,-1 L0,45 C-20,46 -50,46 -95,55 Z" fill="#fef08a" stroke="#451a03" stroke-width="1.5" />
-                            <path d="M-95,13 C-50,4 -25,4 0,3" stroke="#92400e" stroke-width="1" stroke-dasharray="3 2" />
-                            <!-- 右のページ -->
-                            <path d="M100,10 C50,0 20,0 0,-1 L0,45 C20,46 50,46 95,55 Z" fill="#fef08a" stroke="#451a03" stroke-width="1.5" />
-                            <path d="M95,13 C50,4 25,4 0,3" stroke="#92400e" stroke-width="1" stroke-dasharray="3 2" />
-                        </g>
-                    `;
-                    // 飛び散る星屑
-                    for(let i=0; i<8; i++) {
-                        const sx = (preset.id * 31 + i * 47) % 180 + 70;
-                        const sy = (preset.id * 19 + i * 29) % 120 + 40;
-                        svg += `<polygon points="${sx},${sy-5} ${sx+1.5},${sy-1.5} ${sx+5},${sy} ${sx+1.5},${sy+1.5} ${sx},${sy+5} ${sx-1.5},${sy+1.5} ${sx-5},${sy} ${sx-1.5},${sy-1.5}" fill="#ffffff" />`;
-                    }
-                    break;
-
-                case 4:
-                    // --------------------------------------------------
-                    // シーン 4: 「開かれた金色の鳥籠と飛び立つ光の鳥」
-                    // --------------------------------------------------
-                    // 夜空に浮かぶ巨大な三日月
-                    svg += `<path d="M40,40 A70,70 0 0,0 160,160 A65,65 0 1,1 40,40 Z" fill="url(#${goldId})" opacity="0.3" />`;
-                    svg += `<path d="M40,40 A70,70 0 0,0 160,160 A65,65 0 1,1 40,40 Z" fill="#ffffff" opacity="0.8" />`;
-                    // 開かれた鳥かご
-                    svg += `
-                        <g transform="translate(180, 150)">
-                            <!-- かごの底ベース -->
-                            <ellipse cx="40" cy="110" rx="35" ry="10" fill="url(#${goldId})" stroke="#451a03" stroke-width="1" />
-                            <!-- 縦のワイヤーフレーム -->
-                            <path d="M10,110 C5,70 15,20 40,20 C65,20 75,70 70,110" fill="none" stroke="url(#${goldId})" stroke-width="2" />
-                            <path d="M22,110 C18,70 25,25 40,25 C55,25 62,70 58,110" fill="none" stroke="url(#${goldId})" stroke-width="1.5" />
-                            <!-- 開いたドアの枠（手前に飛び出ているイメージ） -->
-                            <path d="M30,110 C20,95 20,65 30,55 L35,55 C45,65 45,95 35,110 Z" fill="none" stroke="#ffffff" stroke-width="3" />
-                            <!-- 鳥かごのドームの上の輪 -->
-                            <circle cx="40" cy="15" r="7" fill="none" stroke="url(#${goldId})" stroke-width="2" />
-                        </g>
-                    `;
-                    // 飛び立つ「光の鳥（折り紙風の直線美・ベジェ曲線）」
-                    svg += `
-                        <g transform="translate(80, 100) scale(1.2)">
-                            <!-- つばさ（上） -->
-                            <path d="M0,0 L35,-35 L15,-5 Z" fill="${preset.bodyColor}" />
-                            <!-- つばさ（下） -->
-                            <path d="M0,0 L15,35 L12,10 Z" fill="${preset.accentColor}" opacity="0.8" />
-                            <!-- 体・頭 -->
-                            <path d="M-15,10 L10,-5 L25,-10 L15,-3 Z" fill="#ffffff" />
-                            <!-- 尾羽 -->
-                            <path d="M-15,10 L-35,25 L-22,12 Z" fill="${preset.bodyColor}" />
-                        </g>
-                    `;
-                    break;
-
-                case 5:
-                    // --------------------------------------------------
-                    // シーン 5: 「黄金のピラミッドとすべてを見通す神の目」
-                    // --------------------------------------------------
-                    // なだらかな美しい砂丘
-                    svg += `<path d="M-20,240 Q100,200 220,260 T340,220 L340,340 L-20,340 Z" fill="${preset.sky[2]}" />`;
-                    svg += `<path d="M-20,280 Q160,250 340,300 L340,340 L-20,340 Z" fill="#030712" />`;
-                    // 巨大な黄金のピラミッド
-                    svg += `
-                        <g transform="translate(100, 140)">
-                            <!-- 日陰面（紫/暗） -->
-                            <polygon points="60,0 0,110 60,120" fill="${preset.sky[1]}" opacity="0.85" />
-                            <!-- 日向面（黄金） -->
-                            <polygon points="60,0 60,120 130,105" fill="url(#${goldId})" />
-                            <!-- ピラミッドのテクスチャ横線 -->
-                            <line x1="30" y1="55" x2="60" y2="60" stroke="#ffffff" stroke-width="1" opacity="0.3" />
-                            <line x1="60" y1="60" x2="95" y2="52" stroke="#ffffff" stroke-width="1" opacity="0.3" />
-                            <line x1="15" y1="82" x2="60" y2="90" stroke="#ffffff" stroke-width="1" opacity="0.3" />
-                            <line x1="60" y1="90" x2="112" y2="80" stroke="#ffffff" stroke-width="1" opacity="0.3" />
-                        </g>
-                    `;
-                    // 天空に輝く「すべてを見通す眼」
-                    svg += `
-                        <g transform="translate(160, 80)">
-                            <!-- 後ろの幾何学後光 -->
-                            <polygon points="0,-45 10,-10 45,0 10,10 0,45 -10,10 -45,0 -10,-10" fill="url(#${lightId})" opacity="0.6" />
-                            <!-- 白目 -->
-                            <path d="M-35,0 Q0,-25 35,0 Q0,25 -35,0 Z" fill="#ffffff" stroke="url(#${goldId})" stroke-width="2.5" />
-                            <!-- 虹彩（瞳） -->
-                            <circle cx="0" cy="0" r="14" fill="${preset.bodyColor}" />
-                            <circle cx="0" cy="0" r="6" fill="#020617" />
-                            <!-- 瞳の輝き光 -->
-                            <circle cx="3" cy="-3" r="3.5" fill="#ffffff" />
-                        </g>
-                    `;
-                    break;
-
-                case 6:
-                    // --------------------------------------------------
-                    // シーン 6: 「発光クラゲと深海に沈む黄金の鍵」
-                    // --------------------------------------------------
-                    // クラゲの傘部分
-                    svg += `
-                        <g transform="translate(100, 110)">
-                            <circle cx="0" cy="-20" r="45" fill="url(#${lightId})" opacity="0.5" />
-                            <!-- メインの傘 -->
-                            <path d="M-35,0 C-35,-40 35,-40 35,0 C35,10 -35,10 -35,0 Z" fill="${preset.bodyColor}" opacity="0.9" />
-                            <!-- ひだ・触手 -->
-                            <path d="M-30,5 Q-20,30 -25,60 Q-27,80 -20,100" fill="none" stroke="${preset.bodyColor}" stroke-width="2" opacity="0.7" />
-                            <path d="M-10,5 Q-5,40 -12,80 Q-15,110 -5,130" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.8" />
-                            <path d="M10,5 Q5,40 12,80 Q15,110 5,130" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.8" />
-                            <path d="M30,5 Q20,30 25,60 Q27,80 20,100" fill="none" stroke="${preset.bodyColor}" stroke-width="2" opacity="0.7" />
-                        </g>
-                    `;
-                    // 海底の岩棚
-                    svg += `<path d="M-20,280 L140,250 L200,280 L340,240 L340,340 L-20,340 Z" fill="${preset.sky[2]}" />`;
-                    // 海底に突き刺さる・横たわる「巨大なアンティーク黄金の鍵」
-                    svg += `
-                        <g transform="translate(190, 220) rotate(45)">
-                            <!-- 鍵の持ち手（装飾的なクローバー型） -->
-                            <circle cx="0" cy="0" r="14" fill="none" stroke="url(#${goldId})" stroke-width="3" />
-                            <circle cx="-10" cy="0" r="8" fill="none" stroke="url(#${goldId})" stroke-width="2" />
-                            <circle cx="10" cy="0" r="8" fill="none" stroke="url(#${goldId})" stroke-width="2" />
-                            <circle cx="0" cy="-10" r="8" fill="none" stroke="url(#${goldId})" stroke-width="2" />
-                            <!-- 鍵の軸（シャフト） -->
-                            <rect x="-3" y="14" width="6" height="60" fill="url(#${goldId})" />
-                            <!-- 鍵のギザギザ（ブレード） -->
-                            <path d="M-3,55 L-15,55 L-15,62 L-3,62 L-3,67 L-15,67 L-15,74 L-3,74 Z" fill="url(#${goldId})" />
-                        </g>
-                    `;
-                    break;
-
-                case 7:
-                    // --------------------------------------------------
-                    // シーン 7: 「機械仕掛けの歯車と咲き誇る薔薇」
-                    // --------------------------------------------------
-                    // 歯車群（スチームパンク調背景）
-                    svg += `
-                        <g fill="none" stroke="${preset.sky[2]}" stroke-width="2" opacity="0.5" transform="translate(80, 100)">
-                            <!-- 大歯車 -->
-                            <circle cx="0" cy="0" r="50" />
-                            <circle cx="0" cy="0" r="35" stroke-dasharray="8 6" />
-                            <line x1="-50" y1="0" x2="50" y2="0" />
-                            <line x1="0" y1="-50" x2="0" y2="50" />
-                        </g>
-                        <g fill="none" stroke="${preset.sky[2]}" stroke-width="2.5" opacity="0.4" transform="translate(220, 80)">
-                            <!-- 小歯車 -->
-                            <circle cx="0" cy="0" r="30" />
-                            <circle cx="0" cy="0" r="20" stroke-dasharray="6 4" />
-                        </g>
-                    `;
-                    // 最前景：真っ赤に咲き乱れる「薔薇の蕾と蔓」
-                    svg += `
-                        <g transform="translate(160, 160)">
-                            <!-- 蔓（ベジェ曲線） -->
-                            <path d="M-120,120 C-60,60 -80,-50 -20,-30 C40,-10 100,-100 120,-120" fill="none" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round" />
-                            <!-- 蔓のトゲ -->
-                            <polygon points="-85,80 -87,70 -76,77" fill="#16a34a" />
-                            <polygon points="20,-20 30,-25 22,-12" fill="#16a34a" />
-                            <!-- メインの美しい薔薇の蕾 -->
-                            <g transform="translate(-25, -35) scale(1.1)">
-                                <!-- 外側の赤い花びら（幾何層） -->
-                                <path d="M0,0 C-30,-20 -30,20 0,35 C30,20 30,-20 0,0 Z" fill="${preset.bodyColor}" stroke="#1e1b4b" stroke-width="1.5" />
-                                <path d="M-10,5 C-25,-15 5,-25 0,0 C-5,15 -2,25 -10,5 Z" fill="${preset.bodyColor}" opacity="0.8" />
-                                <path d="M10,5 C25,-15 -5,-25 0,0 C5,15 2,25 10,5 Z" fill="${preset.bodyColor}" opacity="0.9" />
-                                <!-- 黄金のしずく（朝露） -->
-                                <circle cx="10" cy="20" r="3.5" fill="url(#${goldId})" />
-                            </g>
-                            <!-- 小さなつぼみ -->
-                            <g transform="translate(60, -40) scale(0.6) rotate(30)">
-                                <path d="M0,0 C-30,-20 -30,20 0,35 C30,20 30,-20 0,0 Z" fill="${preset.bodyColor}" />
-                                <path d="M-10,-10 L0,15 L10,-10 Z" fill="#16a34a" />
-                            </g>
-                        </g>
-                    `;
-                    break;
-
-                case 8:
-                    // --------------------------------------------------
-                    // シーン 8: 「歪んだチェス盤の迷宮と浮かぶ駒」
-                    // --------------------------------------------------
-                    // 背景の結晶状オーラ
-                    svg += `<polygon points="160,50 240,160 160,270 80,160" fill="url(#${lightId})" opacity="0.35" />`;
-                    // 遠近感を持つ、極端に歪んだチェス盤（3Dメッシュ）
-                    svg += `<g fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.6">`;
-                    // 外枠
-                    svg += `<polygon points="20,300 160,180 300,300" fill="${preset.sky[0]}" opacity="0.8" />`;
-                    // グリッド線（歪み）
-                    for(let i=0; i<=6; i++) {
-                        const ratio = i / 6;
-                        const startX = 20 + (300 - 20) * ratio;
-                        svg += `<line x1="${startX}" y1="300" x2="160" y2="180" />`;
-                    }
-                    for(let j=1; j<=4; j++) {
-                        const rY = 180 + (300 - 180) * (j / 4);
-                        const sX = 160 - (160 - 20) * (j / 4);
-                        const eX = 160 + (300 - 160) * (j / 4);
-                        svg += `<line x1="${sX}" y1="${rY}" x2="${eX}" y2="${rY}" />`;
-                    }
-                    svg += `</g>`;
-                    // 宙に浮かぶ「チェス駒（クイーン・ポーン）」
-                    svg += `
-                        <!-- クイーン（黄金） -->
-                        <g transform="translate(100, 110) scale(0.8)">
-                            <path d="M15,80 L35,80 L30,40 L35,25 L25,15 L15,25 L20,40 Z" fill="url(#${goldId})" stroke="#451a03" stroke-width="1.5" />
-                            <circle cx="25" cy="12" r="4" fill="#ffffff" />
-                            <rect x="10" y="72" width="30" height="8" rx="2" fill="url(#${goldId})" />
-                        </g>
-                        <!-- ナイト（赤スート・馬のシルエット） -->
-                        <g transform="translate(180, 130) rotate(-15) scale(0.7)">
-                            <path d="M10,80 L40,80 C40,80 45,55 35,40 C25,25 40,10 20,5 C5,0 0,25 15,35 C20,40 10,60 10,80" fill="${preset.bodyColor}" stroke="#1e1b4b" stroke-width="1.5" />
-                            <circle cx="18" cy="18" r="2.5" fill="#ffffff" />
-                        </g>
-                    `;
-                    break;
-
-                case 9:
-                    // --------------------------------------------------
-                    // シーン 9: 「天の川の銀河と星を掬い取る黄金の手」
-                    // --------------------------------------------------
-                    // 渦巻く星雲（放射バック）
-                    svg += `<ellipse cx="160" cy="160" rx="140" ry="80" fill="none" stroke="url(#${lightId})" stroke-width="6" opacity="0.3" transform="rotate(30 160 160)" />`;
-                    svg += `<ellipse cx="160" cy="160" rx="100" ry="50" fill="none" stroke="url(#${lightId})" stroke-width="3" opacity="0.4" transform="rotate(30 160 160)" />`;
-                    // 最前景：空に向かって星を掬いあげる「黄金の手のひら（ベジェ曲線）」
-                    svg += `
-                        <g transform="translate(160, 260) scale(1.3)">
-                            <!-- 手首から手のひら、5本の指 -->
-                            <path d="M-15,60 L15,60 C15,40 25,20 30,0 C32,-10 25,-15 20,-10 C15,0 12,15 10,5 C8,-5 2,-10 -2,-5 C-5,5 -3,20 -5,10 C-7,0 -12,-5 -15,0 C-17,10 -13,25 -15,15 C-17,5 -23,5 -25,10 C-27,20 -20,40 -15,60 Z" fill="url(#${goldId})" stroke="#451a03" stroke-width="1.5" />
-                            <!-- 手のひらの上の大輝星 -->
-                            <g transform="translate(0, -25)">
-                                <polygon points="0,-20 5,-5 20,0 5,5 0,20 -5,5 -20,0 -5,-5" fill="#ffffff" />
-                                <circle cx="0" cy="0" r="6" fill="#ffffff" />
-                                <circle cx="0" cy="0" r="3" fill="${preset.accentColor}" />
-                            </g>
-                        </g>
-                    `;
-                    // 周囲に散らばる小星
-                    for(let i=0; i<6; i++) {
-                        const sx = (preset.id * 43 + i * 53) % 240 + 40;
-                        const sy = (preset.id * 17 + i * 37) % 140 + 30;
-                        svg += `<circle cx="${sx}" cy="${sy}" r="${1 + (i % 3)}" fill="#ffffff" opacity="0.8" />`;
-                    }
-                    break;
-
-                case 10:
-                default:
-                    // --------------------------------------------------
-                    // シーン 10: 「逆さまの都市と湖面に浮かぶ一艘のボート」
-                    // --------------------------------------------------
-                    // 天空から逆さまに吊り下がる都市シルエット
-                    svg += `
-                        <g fill="${preset.sky[0]}" opacity="0.95" transform="translate(0, 0)">
-                            <!-- ビル群（反転） -->
-                            <rect x="40" y="0" width="30" height="110" />
-                            <polygon points="40,110 55,130 70,110" fill="${preset.sky[0]}" />
-                            
-                            <rect x="90" y="0" width="45" height="140" />
-                            <rect x="100" y="140" width="25" height="15" />
-                            
-                            <rect x="160" y="0" width="35" height="120" />
-                            
-                            <rect x="220" y="0" width="40" height="150" />
-                            <polygon points="220,150 240,180 260,150" fill="${preset.bodyColor}" />
-                        </g>
-                    `;
-                    // 中央を隔てる水平線と霧
-                    svg += `<path d="M-20,210 Q160,190 340,210 L340,225 L-20,225 Z" fill="${preset.sky[2]}" opacity="0.6" />`;
-                    // 下半分の静かな湖面
-                    svg += `<rect x="0" y="215" width="320" height="110" fill="${preset.sky[2]}" opacity="0.9" />`;
-                    // 湖面にぽつんと浮かぶ「一艘のボートと1本の細い木」
-                    svg += `
-                        <g transform="translate(130, 240)">
-                            <!-- 水面に映る逆さまビルのうっすらとした反射線 -->
-                            <line x1="0" y1="-10" x2="100" y2="-10" stroke="#ffffff" stroke-width="0.5" opacity="0.2" />
-                            <!-- ボート -->
-                            <path d="M10,25 L45,25 L55,15 L5,15 Z" fill="url(#${goldId})" stroke="#451a03" stroke-width="1" />
-                            <!-- ボートに乗る1本の小さな発光樹 -->
-                            <g transform="translate(25, 15) scale(0.6)">
-                                <line x1="0" y1="0" x2="0" y2="-25" stroke="#ffffff" stroke-width="3" />
-                                <circle cx="0" cy="-25" r="14" fill="${preset.accentColor}" opacity="0.8" />
-                                <circle cx="0" cy="-25" r="8" fill="#ffffff" />
-                            </g>
-                            <!-- 水面の波紋 -->
-                            <ellipse cx="27" cy="27" rx="35" ry="3" fill="none" stroke="#ffffff" stroke-width="1.2" opacity="0.4" />
-                        </g>
-                    `;
-                    break;
-            }
-
-            // カード全体の最終的な縁取り・タロット風のエッジライン
-            svg += `<rect x="6" y="6" width="308" height="308" rx="10" fill="none" stroke="url(#${goldId})" stroke-width="2" opacity="0.5" />`;
-
-            svg += `</svg>`;
-            return svg;
+        function renderPresetSVG(imageId) {
+            const url = `https://drive.google.com/uc?export=view&id=${imageId}`;
+            const fallbackUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400";
+            return `<img src="${url}" class="w-full h-full object-cover rounded-xl border border-slate-200" alt="お題イラスト" onerror="this.onerror=null; this.src='${fallbackUrl}';">`;
         }
     </script>
 </body>
